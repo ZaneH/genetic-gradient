@@ -48,6 +48,12 @@ lwip.open("hard.jpg", function(err, image) {
 
 		// mutate all species by a few pixels
 		for (var i = 0; i < generation_population; i++) {
+			// hijack this for loop to check if the pixel is white
+			if (current_generation_species[i][1] == 1 || current_generation_species[i][1] >= 1 - threshold) {
+				result = current_generation_species[i];
+				return;
+			}
+			
 			// there's a 20% chance each coordinate will be mutated
 			if (Math.random() < 0.2) {
 				// x or y value mutation? up to chance
