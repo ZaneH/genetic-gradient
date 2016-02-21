@@ -5,6 +5,7 @@ var blessed = require("blessed");
 var desired_output = [255, 255, 255, 100];
 var generation_population = 12;
 var max_generations = 300;
+var threshold = 0.2;
 
 // global variables
 var current_generation_species = [[]];
@@ -48,12 +49,6 @@ lwip.open("hard.jpg", function(err, image) {
 
 		// mutate all species by a few pixels
 		for (var i = 0; i < generation_population; i++) {
-			// hijack this for loop to check if the pixel is white
-			if (current_generation_species[i][1] == 1 || current_generation_species[i][1] >= 1 - threshold) {
-				result = current_generation_species[i];
-				return;
-			}
-			
 			// there's a 20% chance each coordinate will be mutated
 			if (Math.random() < 0.2) {
 				// x or y value mutation? up to chance
@@ -70,6 +65,7 @@ lwip.open("hard.jpg", function(err, image) {
 
 		current_generation++;
 		addFitnessCalculations();
+		checkPerfectMatch();
 		updateTerminal();
 	}
 
@@ -97,9 +93,22 @@ lwip.open("hard.jpg", function(err, image) {
 		rgbData = image.getPixel(xCoord, yCoord);
 		return (rgbData['r'] + rgbData['g'] + rgbData['b'] + rgbData['a']) / 865;
 	}
+
+	function checkPerfectMatch() {
+		for (var i = 0; i < generation_population; i++) {
+			if (current_generation_species[i][1] == 1 || current_generation_species[i][1] >= 1 - threshold) {
+				result = current_generation_species[i];
+				return;
+			}
+		}
+	}
 });
 
 function updateTerminal() {
+	screen.key(['escape', 'q', 'C-c'], function(ch, key) {
+		return process.exit(0);
+	});
+
 	var infoBox = blessed.box({
 	  width: '100%',
 	  content: "{bold}Generation:{/bold} " + current_generation + " / " + max_generations + "\n" + "{bold}Desired Output:{/bold} " + desired_output,
